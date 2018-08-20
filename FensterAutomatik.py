@@ -5,55 +5,51 @@ import bs4 as bs
 import re
 import datetime as dt
 import re
-def getResponseData(url):
+def getResponseData(url):                                   # gets response data with given url
 
     headers = {}
-    headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"    #deceve blocker
-    source = request.urlopen(url).read()
+    headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"    
+                                                                        #deceve python blocker
+    source = request.urlopen(url).read()                
     soup = bs.BeautifulSoup(source,'lxml')
     return soup
 
-def Parser(soup, tryal, tosearch):  
+def Parser(soup, tryal, tosearch):                          # filters roughly what we wanna know
     toTry = str(tryal)
-    if tosearch == 'temp':          
+    if tosearch == 'temp':                                  # its temp right now
         #allDivs = soup.find_all('li', 'data-num="1"', class_="vhs")
         allDivs = soup.find_all('div', class_="vhs-text--large portable-hide")
 
-    elif tosearch == 'time':
+    elif tosearch == 'time':                                # now we wanna now what time its gonna get that hot/cold
          allDivs = soup.find_all('div',class_="[ delta ] [ portable-hide ] nowrap text--blue-dark")
     return allDivs
 
-def getDoStuffTime(soup,TypeToFind):
+def getDoStuffTime(soup,TypeToFind):            # now were looking for the actual times when we have to do stuff
     
     amountTries = 0                   # reset amount tries
     WhereToLook = 0               #reset where to look
     allTemps = Parser(soup,amountTries,'temp')    #starts Parser
-    while amountTries <= 23:
-        TempContent = allTemps[amountTries].contents
+    while amountTries <= 23:                # 0-23 are 24 (YEAH! COMPUTER SCIENCE!) --> 24 h
+        TempContent = allTemps[amountTries].contents    
         TempStr = str(TempContent[0])
-        Temp = TempStr[0:2]
+        Temp = TempStr[0:2]                 # gets the actual ´number
         if TypeToFind == "shutDown" :
-             if int(Temp) > 23:
-                WhereToLook = amountTries
-                amountTries = 90
-        if TypeToFind == "shutUp":
+             if int(Temp) > 23:             # 23°C is the threshold
+                WhereToLook = amountTries   #now we know the 'id' of the time 
+                amountTries = 90            # no need to look no further :P
+        if TypeToFind == "shutUp":          #same thing with cold
             if int(Temp) <= 23:
                 WhereToLook = amountTries
                 amountTries = 90
                 pass
             pass       
        
-        amountTries+=1
-    allTimes = Parser(soup, WhereToLook,'time')
-    TimeContent = allTimes[WhereToLook].contents
+        amountTries+=1                      #index up
+    allTimes = Parser(soup, WhereToLook,'time')     # now what time is it?
+    TimeContent = allTimes[WhereToLook].contents    
     TimeStr = str(TimeContent[0])
     timeToShut = TimeStr[25:27]
     return timeToShut
-
-def foundsite(soup):
-    pass
-
-
 
 
 
